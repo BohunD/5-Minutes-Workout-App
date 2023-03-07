@@ -1,5 +1,7 @@
 package com.example.a7minutesworkout
 
+import android.app.Dialog
+import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -11,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.a7minutesworkout.databinding.ActivityExerciseBinding
+import com.example.a7minutesworkout.databinding.CustomDialogBinding
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -18,7 +21,7 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private var binding: ActivityExerciseBinding? = null
     private var restTimer: CountDownTimer?= null
     private var restProgress = 0
-    private val restDuration: Int = 11
+    private var restDuration: Int = 11
     private var tts: TextToSpeech?= null
     private var player: MediaPlayer?= null
     private var exerciseAdapter: ExerciseStatusAdapter?= null
@@ -35,6 +38,7 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         super.onCreate(savedInstanceState)
         binding = ActivityExerciseBinding.inflate(layoutInflater)
         tts = TextToSpeech(this, this )
+
         setSupportActionBar(binding?.toolbarExercise)
         if(supportActionBar!= null){
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -45,17 +49,42 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         exerciseList =Constants.defaultExerciseList()
 
         binding?.toolbarExercise?.setNavigationOnClickListener{
-            onBackPressed()        }
+            customDialogForBackButton()       }
+
         setupRestView()
         setupExerciseStatusRecyclerView()
     }
+
+    
+    override fun onBackPressed() {
+        customDialogForBackButton()
+
+    }
+    private fun customDialogForBackButton() {
+        val customDialog = Dialog(this)
+        val dialogBinding = CustomDialogBinding.inflate(layoutInflater)
+        customDialog.setContentView(dialogBinding.root)
+        customDialog.setCanceledOnTouchOutside(false)
+        dialogBinding.btnConfirm?.setOnClickListener{
+            this@ExerciseActivity.finish()
+        }
+        dialogBinding.btnCancel?.setOnClickListener{
+            customDialog.dismiss()
+        }
+        customDialog.show()
+    }
+
 
     override fun onInit(status: Int) {
         if(status == TextToSpeech.SUCCESS){
             val result = tts!!.setLanguage(Locale.UK)
             if(result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED){
+                Toast.makeText(this, "error", Toast.LENGTH_SHORT).show()
             }
 
+        }
+        else{
+            Toast.makeText(this, "ERROR", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -84,6 +113,7 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     }
 
     private fun setupRestView(){
+
         sound(R.raw.press_start)
 
         binding?.flProgressbarRest?.visibility = View.VISIBLE
@@ -91,6 +121,9 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         binding?.exerciseGif?.visibility = View.INVISIBLE
         binding?.flProgressbarExercise?.visibility = View.INVISIBLE
         binding?.tvExerciseExName?.visibility = View.INVISIBLE
+        speakOut("Next exercise is "+
+                exerciseList!![currentExercisePosition].getName()
+        )
 
 
 
@@ -99,16 +132,17 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             restProgress = 0
         }
         binding?.tvTitle?.visibility = View.VISIBLE
-        if(currentExercisePosition< exerciseList!!.size-1){
-            binding?.tvTitle?.text =" Get ready for "
-            binding?.tvExerciseName?.text =
-                    " ${exerciseList!![currentExercisePosition].getName()}"
-            speakOut("Next exercise is "+ "${exerciseList!![currentExercisePosition].getName()}")
-        }
+        binding?.tvTitle?.text =" Get ready for "
+        binding?.tvExerciseName?.text =
+             exerciseList!![currentExercisePosition].getName()
 
-        else{
-            binding?.tvTitle?.text = "Last exercise"
-        }
+        if(currentExercisePosition % 3 == 0 && currentExercisePosition > 0)
+            restDuration = 26
+        else
+            restDuration = 11
+
+
+
 
         setRestProgressBar()
 
@@ -121,8 +155,6 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         binding?.flProgressbarExercise?.visibility = View.VISIBLE
         binding?.tvExerciseExName?.text = exerciseList!![currentExercisePosition].getName()
         binding?.tvExerciseExName?.visibility = View.VISIBLE
-
-
 
         if(exerciseTimer!= null) {
             exerciseTimer?.cancel()
@@ -178,7 +210,13 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 currentExercisePosition+=1
 
                 exerciseProgress =0
-                setupRestView()
+                if(currentExercisePosition < exerciseList?.size!!.minus(1) )
+                    setupRestView()
+                else{
+                    finish()
+                    val intent = Intent(this@ExerciseActivity, FinishActivity::class.java)
+                    startActivity(intent)
+                }
             }
 
         }.start()
