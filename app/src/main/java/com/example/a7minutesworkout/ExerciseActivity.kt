@@ -31,6 +31,7 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private var exerciseProgress = 0
     private var exerciseDuration: Int = 31
     private var isRest = true
+    private var isPaused = false
 
     private var exerciseList : ArrayList<ExerciseModel>? = null
     private var currentExercisePosition = 0
@@ -54,8 +55,24 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         setupRestView()
         setupExerciseStatusRecyclerView()
+        binding?.flProgressbarExercise?.setOnClickListener { onPauseClicked() }
+        binding?.flProgressbarRest?.setOnClickListener { onPauseClicked() }
+        binding?.ivPrev?.setOnClickListener { onLeftClicked() }
+        binding?.ivNext?.setOnClickListener { onRightClicked() }
     }
 
+    private fun onPauseClicked(){
+        if(isPaused) {
+            if (isRest)
+                setRestProgressBar()
+            else{
+                setExerciseProgressBar()
+            }
+        }
+        else
+            stop()
+        isPaused = !isPaused
+    }
 
     override fun onBackPressed() {
         customDialogForBackButton()
@@ -76,12 +93,48 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             }
             else{
             setExerciseProgressBar()
-            binding?.exerciseGif?.visibility = View.VISIBLE}
+            }
         }
         customDialog.show()
     }
 
 
+    private fun onLeftClicked(){
+        for(item:ExerciseModel in exerciseList!!){
+            if(!item.getIsCompleted()){
+                item.setIsSelected(false)
+                item.setIsCompleted(false)
+            }
+            if(item.getIsCompleted()&& item.getIsSelected()){
+                item.setIsSelected(false)
+                item.setIsCompleted(true)
+            }
+        }
+        if(currentExercisePosition>0){
+        currentExercisePosition-=1
+        setupExerciseView()}
+
+        exerciseList!![currentExercisePosition].setIsSelected(true)
+        exerciseAdapter!!.notifyDataSetChanged()
+    }
+    private fun onRightClicked(){
+        for(item:ExerciseModel in exerciseList!!){
+            if(!item.getIsCompleted()){
+                item.setIsSelected(false)
+                item.setIsCompleted(false)
+            }
+            if(item.getIsCompleted()&& item.getIsSelected()){
+                item.setIsSelected(false)
+                item.setIsCompleted(true)
+            }
+        }
+        if(currentExercisePosition< exerciseList!!.size-1){
+            currentExercisePosition+=1
+            setupExerciseView()
+            exerciseList!![currentExercisePosition].setIsSelected(true)
+            exerciseAdapter!!.notifyDataSetChanged()
+        }
+    }
     private fun stop(){
         if(isRest){
             restProgress = restDuration - binding?.tvTimerRest?.text.toString().toInt()
@@ -90,7 +143,6 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         else{
             exerciseProgress = exerciseDuration - binding?.tvTimerExercise?.text.toString().toInt()
             exerciseTimer?.cancel()
-            binding?.exerciseGif?.visibility = View.INVISIBLE
 
         }
     }
@@ -131,13 +183,29 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
     }
 
-    private fun setupRestView(){
-        sound(R.raw.press_start)
+    private fun setRestVisibility(){
         binding?.flProgressbarRest?.visibility = View.VISIBLE
         binding?.tvExerciseName?.visibility = View.VISIBLE
         binding?.exerciseGif?.visibility = View.INVISIBLE
         binding?.flProgressbarExercise?.visibility = View.INVISIBLE
+        binding?.tvTitle?.visibility = View.VISIBLE
         binding?.tvExerciseExName?.visibility = View.INVISIBLE
+        binding?.ivNext?.visibility = View.INVISIBLE
+        binding?.ivPrev?.visibility = View.INVISIBLE
+    }
+    private fun setExerciseVisibility(){
+        binding?.flProgressbarRest?.visibility = View.INVISIBLE
+        binding?.exerciseGif?.visibility = View.VISIBLE
+        binding?.flProgressbarExercise?.visibility = View.VISIBLE
+        binding?.tvExerciseExName?.visibility = View.VISIBLE
+        binding?.ivPrev?.visibility = View.VISIBLE
+        binding?.ivNext?.visibility = View.VISIBLE
+        binding?.tvTitle?.visibility= View.INVISIBLE
+        binding?.tvExerciseName?.visibility = View.INVISIBLE
+    }
+    private fun setupRestView(){
+        sound(R.raw.press_start)
+        setRestVisibility()
         isRest = true
         speakOut("Next exercise is "+
                 exerciseList!![currentExercisePosition].getName()
@@ -146,7 +214,6 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             restTimer?.cancel()
             restProgress = 0
         }
-        binding?.tvTitle?.visibility = View.VISIBLE
         binding?.tvTitle?.text =" Get ready for "
         binding?.tvExerciseName?.text =
              exerciseList!![currentExercisePosition].getName()
@@ -154,29 +221,20 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             restDuration = 26
         else
             restDuration = 11
-
-
-
-
         setRestProgressBar()
 
     }
 
     private fun setupExerciseView(){
         sound(R.raw.end_exercise)
-        binding?.flProgressbarRest?.visibility = View.INVISIBLE
-        binding?.exerciseGif?.visibility = View.VISIBLE
-        binding?.flProgressbarExercise?.visibility = View.VISIBLE
+        setExerciseVisibility()
         binding?.tvExerciseExName?.text = exerciseList!![currentExercisePosition].getName()
-        binding?.tvExerciseExName?.visibility = View.VISIBLE
         isRest = false
         if(exerciseTimer!= null) {
             exerciseTimer?.cancel()
             exerciseProgress = 0
         }
         binding?.exerciseGif?.setImageResource(exerciseList!![currentExercisePosition].getImage())
-        binding?.tvTitle?.visibility= View.INVISIBLE
-        binding?.tvExerciseName?.visibility = View.INVISIBLE
         setExerciseProgressBar()
 
     }
@@ -208,7 +266,7 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private fun setExerciseProgressBar(){
         binding?.progressbarExercise?.progress = exerciseProgress
         binding?.tvTimerExercise?.text = exerciseDuration.toString()
-
+        binding?.exerciseGif?.visibility = View.VISIBLE
         exerciseTimer = object : CountDownTimer(((exerciseDuration - exerciseProgress)*1000).toLong(), 1000){
             override fun onTick(millisUntilFinished: Long) {
                 exerciseProgress++
