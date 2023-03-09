@@ -10,9 +10,10 @@
     <ImageView
         android:id="@+id/iv_topImage"
         android:layout_width="match_parent"
-        android:layout_height="220dp"
-        android:src="@drawable/img_main_page"
-        android:contentDescription="start image"
+        android:layout_height="180dp"
+        android:src="@drawable/logo"
+        android:scaleType="center"
+        android:contentDescription="logo image"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/fl_start"/>
     <FrameLayout
@@ -36,14 +37,15 @@
             />
 
     </FrameLayout>
+
     <FrameLayout
         android:id="@+id/fl_bmi"
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:background="@drawable/item_circular_color_accent_background"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/fl_history"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/fl_start"
         >
 
@@ -65,8 +67,41 @@
         android:textStyle="bold"
         android:textColor="@color/black"
         android:textSize="16dp"
+        app:layout_constraintEnd_toStartOf="@id/fl_history"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/fl_bmi"/>
+
+
+    <FrameLayout
+        android:id="@+id/fl_history"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:background="@drawable/item_circular_color_accent_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/fl_bmi"
+        app:layout_constraintTop_toBottomOf="@+id/fl_start"
+        >
+
+        <TextView
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:layout_gravity="center"
+            android:background="@drawable/history"
+            android:textColor="@color/colorPrimary"
+            android:textSize="20dp" />
+
+    </FrameLayout>
+    <TextView
+        android:id="@+id/tv_history"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="History"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:textSize="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/tv_bmi"
+        app:layout_constraintTop_toBottomOf="@+id/fl_history"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
