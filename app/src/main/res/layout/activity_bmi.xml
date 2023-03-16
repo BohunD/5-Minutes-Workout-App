@@ -65,6 +65,28 @@
             android:hint="Weight (kg)"
             android:inputType="numberDecimal"
             android:textSize="16sp"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_us_weight"
+        android:layout_below="@+id/rg_units"
+        android:layout_width="match_parent"
+        android:visibility="invisible"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        app:boxStrokeColor="@color/colorAccent"
+        android:textColorHint="@color/colorAccent"
+        style = "@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        >
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/et_us_weight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Weight (lbs)"
+            android:inputType="numberDecimal"
+            android:textSize="16sp"/>
+
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout

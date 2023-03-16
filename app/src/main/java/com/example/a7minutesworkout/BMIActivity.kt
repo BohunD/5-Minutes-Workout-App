@@ -53,17 +53,23 @@ class BMIActivity : AppCompatActivity() {
     private fun showTypeOfHeight(){
         binding?.rbMetricUnits?.setOnClickListener {
             binding?.llUsHeight?.visibility = View.INVISIBLE
+            binding?.tilUsWeight?.visibility = View.INVISIBLE
             binding?.tilMetricHeight?.visibility = View.VISIBLE
+            binding?.tilMetricWeight?.visibility = View.VISIBLE
             binding?.etMetricWeight?.text?.clear()
-            binding?.etMetricWeight?.text?.clear()
+            binding?.etUsWeight?.text?.clear()
             binding?.etUsInch?.text?.clear()
             binding?.etUsFeet?.text?.clear()
             binding?.llBmiResult?.visibility = View.INVISIBLE
         }
         binding?.rbUsUnits?.setOnClickListener {
+            binding?.tilMetricWeight?.visibility = View.INVISIBLE
+            binding?.tilUsWeight?.visibility = View.VISIBLE
+            binding?.etMetricWeight?.text?.clear()
             binding?.llUsHeight?.visibility = View.VISIBLE
             binding?.tilMetricHeight?.visibility = View.INVISIBLE
             binding?.etMetricWeight?.text?.clear()
+            binding?.etMetricHeight?.text?.clear()
             binding?.llBmiResult?.visibility = View.INVISIBLE
 
         }
@@ -108,7 +114,8 @@ class BMIActivity : AppCompatActivity() {
                 if(validateUsUnits()){
                     val height =
                         binding?.etUsInch?.text.toString().toFloat() + binding?.etUsFeet?.text.toString().toFloat() * 12
-                    bmi = 703*(binding?.etMetricWeight?.text.toString().toFloat() / height.pow(2))
+                    val weight: Float = 0.45359237f * binding?.etMetricWeight?.text.toString().toFloat()
+                    bmi = 703*(weight / height.pow(2))
                     showBMI(bmi)
                 }
             }

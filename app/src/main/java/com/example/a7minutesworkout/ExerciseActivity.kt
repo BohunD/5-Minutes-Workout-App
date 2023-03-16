@@ -11,10 +11,14 @@ import android.speech.tts.TextToSpeech
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.a7minutesworkout.databinding.ActivityExerciseBinding
 import com.example.a7minutesworkout.databinding.CustomDialogBinding
+import kotlinx.coroutines.launch
 import pl.droidsonroids.gif.GifDrawable
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -46,7 +50,6 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
         }
         setContentView(binding?.root)
-        setSupportActionBar(binding?.toolbarExercise)
 
         exerciseList =Constants.defaultExerciseList()
 
@@ -217,10 +220,7 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         binding?.tvTitle?.text =" Get ready for "
         binding?.tvExerciseName?.text =
              exerciseList!![currentExercisePosition].getName()
-        if(currentExercisePosition % 3 == 0 && currentExercisePosition > 0)
-            restDuration = 26
-        else
-            restDuration = 11
+
         setRestProgressBar()
 
     }
@@ -240,6 +240,13 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     }
 
     private fun setRestProgressBar(){
+        if(currentExercisePosition % 3 == 0 && currentExercisePosition > 0) {
+            restDuration = 26
+            restProgress = 0
+        }
+        else
+            restDuration = 11
+        binding?.progressbarRest?.max = restDuration-1
         binding?.progressbarRest?.progress = restProgress
         binding?.tvTimerRest?.text = (restDuration- restProgress).toString()
         restTimer = object : CountDownTimer(((restDuration - restProgress)*1000).toLong(), 1000){
@@ -275,7 +282,12 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 if((exerciseDuration - exerciseProgress <=5) && (exerciseDuration - exerciseProgress >0))
                     speakOut(binding?.tvTimerExercise?.text.toString())
             }
-
+            private fun getDate(): String{
+                val date = Calendar.getInstance().time
+                val formatter = SimpleDateFormat.getDateTimeInstance() //or use getDateInstance()
+                val formatedDate = formatter.format(date)
+                return formatedDate
+            }
             override fun onFinish() {
                 exerciseList!![currentExercisePosition].setIsSelected(false)
                 exerciseAdapter!!.notifyDataSetChanged()
@@ -287,6 +299,10 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                     setupRestView()
                 else{
                     finish()
+                    val historyDao = (application as HistoryApp).db.historyDao()
+                    lifecycleScope.launch {
+                        historyDao.insert(HistoryEntity(date = getDate()))
+                    }
                     val intent = Intent(this@ExerciseActivity, FinishActivity::class.java)
                     startActivity(intent)
                 }
